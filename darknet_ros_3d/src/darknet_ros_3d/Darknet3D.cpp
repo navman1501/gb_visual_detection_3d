@@ -58,6 +58,9 @@ Darknet3D::Darknet3D():
   darknet3d_pub_ = nh_.advertise<gb_visual_detection_3d_msgs::BoundingBoxes3d>(output_bbx3d_topic_, 100);
   markers_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/darknet_ros_3d/markers", 100);
 
+  // Detected object contact points
+  detected_object_points_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/darknet_method_points", 1);
+
   yolo_sub_ = nh_.subscribe(input_bbx_topic_, 1, &Darknet3D::darknetCb, this);
   pointCloud_sub_ = nh_.subscribe(pointcloud_topic_, 1, &Darknet3D::pointCloudCb, this);
 
@@ -196,10 +199,58 @@ Darknet3D::update()
   publish_markers(msg);
 }
 
+/***********************************************************************************************************************
+  * @brief Generates the contact points of the detected object, based off the boundary box limits generated from boxLimits() and stores in MarkerArray
+  * 
+  * @param[in] box_limit - takes in the BoxLimit message of the object, containing centroids, max and min limits
+  * @return returns a marker array for 5 centre contact points for the boundary box -- faces (left, right, centre, top, front)
+***********************************************************************************************************************/
+
+visualization_msgs::MarkerArray 
+create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes)
+{
+  visualization_msgs::MarkerArray msg;
+
+  int counter_id = 0;
+  for (auto bb : boxes.bounding_boxes)
+  {
+    visualization_msgs::Marker bbx_marker;
+
+    bbx_marker.header.frame_id = boxes.header.frame_id;
+    bbx_marker.header.stamp = boxes.header.stamp;
+    bbx_marker.ns = "darknet3d";
+    bbx_marker.id = counter_id++;
+    bbx_marker.type = visualization_msgs::Marker::CUBE;
+    bbx_marker.action = visualization_msgs::Marker::ADD;
+    bbx_marker.pose.position.x = bb.xmax;
+    bbx_marker.pose.position.y = bb.ymax;
+    bbx_marker.pose.position.z = (bb.zmax + bb.zmin) / 2.0;
+    bbx_marker.pose.orientation.x = 0.0;
+    bbx_marker.pose.orientation.y = 0.0;
+    bbx_marker.pose.orientation.z = 0.0;
+    bbx_marker.pose.orientation.w = 1.0;
+    bbx_marker.scale.x = 0.01;
+    bbx_marker.scale.y = 0.01;
+    bbx_marker.scale.z = 0.01;
+    bbx_marker.color.b = 0;
+    bbx_marker.color.g = bb.probability * 255.0;
+    bbx_marker.color.r = (1.0 - bb.probability) * 255.0;
+    bbx_marker.color.a = 0.4;
+    bbx_marker.lifetime = ros::Duration(0.5);
+
+    msg.markers.push_back(bbx_marker);
+  }
+
+  return msg;
+
+}
+
+
 void
 Darknet3D::publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d& boxes)
 {
   visualization_msgs::MarkerArray msg;
+  visualization_msgs::MarkerArray boxmarkerstemp;
 
   int counter_id = 0;
   for (auto bb : boxes.bounding_boxes)
@@ -226,10 +277,13 @@ Darknet3D::publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d& b
     bbx_marker.color.g = bb.probability * 255.0;
     bbx_marker.color.r = (1.0 - bb.probability) * 255.0;
     bbx_marker.color.a = 0.4;
-    bbx_marker.lifetime = ros::Duration(0.5);
+    bbx_marker.lifetime = ros::Duration(0.5);    
 
     msg.markers.push_back(bbx_marker);
   }
+
+  boxmarkerstemp = create_display_contact_points(boxes);
+  detected_object_points_pub_.publish(boxmarkerstemp);
 
   markers_pub_.publish(msg);
 }

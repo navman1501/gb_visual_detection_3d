@@ -50,6 +50,10 @@
 #include <vector>
 #include <string>
 
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
+
 namespace darknet_ros_3d
 {
 
@@ -70,10 +74,17 @@ private:
       const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
       gb_visual_detection_3d_msgs::BoundingBoxes3d* boxes);
 
+
+  //Function to create contact points from all bounding boxes of detected objects and create MarkerArrays
+  visualization_msgs::MarkerArray create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes);
+
   ros::NodeHandle nh_;
   ros::Subscriber yolo_sub_, pointCloud_sub_;
   ros::Publisher darknet3d_pub_, markers_pub_;
   tf::TransformListener tfListener_;
+
+  //Publish the detected object contact points
+  ros::Publisher detected_object_points_pub_;
 
   std::vector<darknet_ros_msgs::BoundingBox> original_bboxes_;
   sensor_msgs::PointCloud2 point_cloud_;
