@@ -1,5 +1,8 @@
 <launch>
 
+  <!-- Include the Realsense2 Camera launch file for immediate start-->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" /> 
+
   <!-- Config camera image topic  -->
   <arg name="camera_rgb_topic" default="/camera/color/image_raw" />
 
