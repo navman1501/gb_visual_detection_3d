@@ -29,8 +29,17 @@
     <param name="config_path"           value="$(arg yolo_config_path)" />
   </node>
 
+  <!-- Declare an argument for a rosbag to get data of boxlimits-->
+  <arg name="darknet_bbox_bag" default="true" />
+
   <!-- Start darknet ros 3d -->
   <node pkg="darknet_ros_3d" type="darknet3d_node" name="darknet_3d" output="screen">
     <rosparam command="load" file="$(find darknet_ros_3d)/config/darknet_3d.yaml" />
   </node>
+
+  <group if="$(arg darknet_bbox_bag)">
+      <node pkg="rosbag" type="record" name="darknet_bbox"
+      args="-o $(find darknet_ros_3d)/bag /darknet_ros_3d/markers" />
+  </group>
+
 </launch>

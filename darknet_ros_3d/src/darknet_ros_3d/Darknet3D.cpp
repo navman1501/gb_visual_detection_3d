@@ -219,7 +219,7 @@ visualization_msgs::MarkerArray Darknet3D::create_display_contact_points(const g
 
     //    Marker positioning:   Left marker,  Right marker,   Centre marker,  Top marker,   Front marker
     float markerPositionX[5] = {centroid_x,   centroid_x,     centroid_x,     centroid_x,   bb.xmax};
-    float markerPositionY[5] = {bb.ymin,      bb.ymax,        centroid_y,     centroid_y,   centroid_y};
+    float markerPositionY[5] = {bb.ymax,      bb.ymin,        centroid_y,     centroid_y,   centroid_y};
     float markerPositionZ[5] = {centroid_z,   centroid_z,     centroid_z,     bb.zmax,      centroid_z};
 
     //Loop through all the faces to push to MarkerArray
