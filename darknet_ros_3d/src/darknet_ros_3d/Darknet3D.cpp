@@ -206,39 +206,47 @@ Darknet3D::update()
   * @return returns a marker array for 5 centre contact points for the boundary box -- faces (left, right, centre, top, front)
 ***********************************************************************************************************************/
 
-visualization_msgs::MarkerArray 
-create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes)
+visualization_msgs::MarkerArray Darknet3D::create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes)
 {
   visualization_msgs::MarkerArray msg;
 
   int counter_id = 0;
   for (auto bb : boxes.bounding_boxes)
   {
-    visualization_msgs::Marker bbx_marker;
+    float centroid_x = (bb.xmax + bb.xmin) / 2.0;
+    float centroid_y = (bb.ymax + bb.ymin) / 2.0;
+    float centroid_z = (bb.zmax + bb.zmin) / 2.0;
 
-    bbx_marker.header.frame_id = boxes.header.frame_id;
-    bbx_marker.header.stamp = boxes.header.stamp;
-    bbx_marker.ns = "darknet3d";
-    bbx_marker.id = counter_id++;
-    bbx_marker.type = visualization_msgs::Marker::CUBE;
-    bbx_marker.action = visualization_msgs::Marker::ADD;
-    bbx_marker.pose.position.x = bb.xmax;
-    bbx_marker.pose.position.y = bb.ymax;
-    bbx_marker.pose.position.z = (bb.zmax + bb.zmin) / 2.0;
-    bbx_marker.pose.orientation.x = 0.0;
-    bbx_marker.pose.orientation.y = 0.0;
-    bbx_marker.pose.orientation.z = 0.0;
-    bbx_marker.pose.orientation.w = 1.0;
-    bbx_marker.scale.x = 0.01;
-    bbx_marker.scale.y = 0.01;
-    bbx_marker.scale.z = 0.01;
-    bbx_marker.color.b = 0;
-    bbx_marker.color.g = bb.probability * 255.0;
-    bbx_marker.color.r = (1.0 - bb.probability) * 255.0;
-    bbx_marker.color.a = 0.4;
-    bbx_marker.lifetime = ros::Duration(0.5);
+    //    Marker positioning:   Left marker,  Right marker,   Centre marker,  Top marker,   Front marker
+    float markerPositionX[5] = {centroid_x,   centroid_x,     centroid_x,     centroid_x,   bb.xmax};
+    float markerPositionY[5] = {bb.ymin,      bb.ymax,        centroid_y,     centroid_y,   centroid_y};
+    float markerPositionZ[5] = {centroid_z,   centroid_z,     centroid_z,     bb.zmax,      centroid_z};
 
-    msg.markers.push_back(bbx_marker);
+    //Loop through all the faces to push to MarkerArray
+    for (int i = 0; i < 5; i++) {
+      visualization_msgs::Marker marker;
+      marker.header.frame_id = boxes.header.frame_id;
+      marker.header.stamp = boxes.header.stamp;
+      marker.ns = "darknet3d";
+      marker.id = i;
+      marker.type = visualization_msgs::Marker::SPHERE;
+      marker.action = visualization_msgs::Marker::ADD;
+      marker.pose.position.x = markerPositionX[i];
+      marker.pose.position.y = markerPositionY[i];
+      marker.pose.position.z = markerPositionZ[i];
+      marker.pose.orientation.x = 0.0;
+      marker.pose.orientation.y = 0.0;
+      marker.pose.orientation.z = 0.0;
+      marker.pose.orientation.w = 1.0;
+      marker.scale.x = 0.01;
+      marker.scale.y = 0.01;
+      marker.scale.z = 0.01;
+      marker.color.a = 1.0; // Don't forget to set the alpha!
+      marker.color.r = 0.0;
+      marker.color.g = 1.0;
+      marker.color.b = 0.0;
+      msg.markers.push_back(marker);
+    }
   }
 
   return msg;
@@ -247,7 +255,7 @@ create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d
 
 
 void
-Darknet3D::publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d& boxes)
+Darknet3D::publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes)
 {
   visualization_msgs::MarkerArray msg;
   visualization_msgs::MarkerArray boxmarkerstemp;

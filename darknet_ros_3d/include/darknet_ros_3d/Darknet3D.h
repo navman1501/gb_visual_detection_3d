@@ -68,15 +68,18 @@ private:
   void initParams();
   void pointCloudCb(const sensor_msgs::PointCloud2::ConstPtr& msg);
   void darknetCb(const darknet_ros_msgs::BoundingBoxes::ConstPtr& msg);
-  void publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d& boxes);
+
+  //Function to create contact points from all bounding boxes of detected objects and create MarkerArrays
+  visualization_msgs::MarkerArray create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes);
+
+  void publish_markers(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes);
 
   void calculate_boxes(const sensor_msgs::PointCloud2& cloud_pc2,
       const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_pcl,
       gb_visual_detection_3d_msgs::BoundingBoxes3d* boxes);
 
 
-  //Function to create contact points from all bounding boxes of detected objects and create MarkerArrays
-  visualization_msgs::MarkerArray create_display_contact_points(const gb_visual_detection_3d_msgs::BoundingBoxes3d boxes);
+  
 
   ros::NodeHandle nh_;
   ros::Subscriber yolo_sub_, pointCloud_sub_;
