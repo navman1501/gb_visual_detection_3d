@@ -4,4 +4,4 @@ point_cloud_topic: /camera/depth_registered/points
 working_frame: camera_link
 mininum_detection_thereshold: 0.3
 minimum_probability: 0.3
-interested_classes: ["sports ball", "bottle", "wineglass", "cup", "bowl", "clock"]
+interested_classes: ["sports ball", "bottle", "wine glass", "cup", "bowl", "clock"]
