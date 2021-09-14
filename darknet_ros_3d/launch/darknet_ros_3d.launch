@@ -38,6 +38,11 @@
     <rosparam command="load" file="$(find darknet_ros_3d)/config/darknet_3d.yaml" />
   </node>
 
+  <!-- Correcting the TF for on board camera -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base_link" 
+  args= "0.16 0 0.128 0 0.366519 0 /base_link /camera_link"/> <!-- 21 deg -->
+  <!-- 40 deg = 0.698132, 35 deg = 0.610865, 25deg = 0.436332, 22deg = 0.383972, 21 deg = 0.366519-->
+
   <group if="$(arg darknet_bbox_bag)">
       <node pkg="rosbag" type="record" name="darknet_bbox"
       args="-o $(find darknet_ros_3d)/bag/darknet_bbox_bag /darknet_ros_3d/bounding_boxes" />
